@@ -13,6 +13,8 @@ const zed = {
     firstCard: null,
     secondCard: null,
     counter: 0,
+    mem1: [],
+    mem2: [],
     gameWinner: null,
     gameOver: false,
     //fill 'deck' with cards specified by suits & numRanks
@@ -69,8 +71,8 @@ const zed = {
     //loads the kitty array with the first&second Card, and takes 1 card from each player deck.
     fillKitty: function () {
         // console.log("fillKitty Started")
-        if (this.firstCard !== null) this.kitty.push(this.p1Deck.shift())
-        if (this.secondCard !== null) this.kitty.push(this.p1Deck.shift())
+        if (this.firstCard !== null) this.kitty.push(this.firstCard)
+        if (this.secondCard !== null) this.kitty.push(this.secondCard)
         if (this.p1Deck.length > 0) this.kitty.push(this.p1Deck.shift())
         if (this.p2Deck.length > 0) this.kitty.push(this.p2Deck.shift())
         this.firstCard = null;
@@ -83,7 +85,7 @@ const zed = {
         else if (this.secondCard.rank > this.firstCard.rank) this.winner(this.p2Deck)
         else {
             this.fillKitty()
-            console.log("There was a tie, players add one to the kitty")
+            // console.log("There was a tie, players add one to the kitty")
         }
     },
     //check for empty player decks
@@ -97,8 +99,10 @@ const zed = {
 
         while (!this.gameOver) {
             this.counter++
-            console.log(`counter: ${this.counter}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length}`)
-            if (this.counter > 500) break
+            // console.log(`counter: ${this.counter}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length}`)
+            // this.mem1.push(this.p1Deck)
+            // this.mem2.push(this.p2Deck)
+            if (this.counter > 10000) break
             //pull Cards from the player decks
             this.firstCard = this.getCard(this.p1Deck)
             this.secondCard = this.getCard(this.p2Deck)
@@ -113,22 +117,50 @@ const zed = {
             }
             else this.gameOver = false
         }
+    },
+    averageCounter: 0,
+    initialize: function() {
+        deck = []
+        p2Deck = []
+        kitty = []
+        firstCard = null
+        secondCard = null
+        counter = 0
+        mem1 = []
+        mem2 = []
+        gameWinner = null
+        gameOver = false
+        this.buildDeck()
+        this.shuffle()
+        this.dealCards()
+
+
+    }
+    runGame: function(num=1) {
+        for(let i = 0; i < num; i++) {
+            this.initialize()
+            this.flipFight()
+            console.log(`count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
+
+        }
     }
 }
 
-zed.buildDeck()
-// console.log(zed.deck)
-zed.shuffle()
-// console.log(zed.deck)
-zed.dealCards()
-// console.log(zed.p1Deck[0].rank)
-zed.flipFight()
-zed.p2Deck.length
-zed.p1Deck.length
-zed.kitty.length
-zed.counter
-// zed.getCard(zed.p1Deck)
-// console.log(zed.firstCard)
+zed.runGame()
+//@@@@@@@@@@Run game@@@@@@@@@@@@@@@
+// zed.buildDeck()
+// // console.log(zed.deck)
+// zed.shuffle()
+// // console.log(zed.deck)
+// zed.dealCards()
+// // console.log(zed.p1Deck[0].rank)
+// zed.flipFight()
+// zed.p2Deck.length
+// zed.p1Deck.length
+// zed.kitty.length
+// zed.counter
+// // zed.getCard(zed.p1Deck)
+// // console.log(zed.firstCard)
 
 //@@@@@@@@@@TESTKITTY@@@@@@@@@
 // zed.fillKitty()
