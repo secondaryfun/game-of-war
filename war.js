@@ -1,10 +1,20 @@
+//@@@@@@@@@@@@@@@@@@@@@@ Classes @@@@@@@@@@@@@@@@@@@@@@@@@@@
 function Card(rank, face, frontUrl, backUrl) {
     this.rank = rank;
     this.face = face;
     this.frontUrl = frontUrl;
     this.backUrl = backUrl;
 }
+function Game(gameNum, count, p1Length, p2Length, kittyLength) {
+        this.gameNum = gameNum;
+        this.count = count;
+        this.p1Length = p1Length;
+        this.p2Length = p2Length;
+        this.kittyLength = kittyLength;
+}
 
+
+//@@@@@@@@@@@@@@@@@@@@@@@ Game Object @@@@@@@@@@@@@@@@@@@@@@@@@@@
 const zed = { 
     deck: [], //array of cards
     p1Deck: [],
@@ -13,7 +23,6 @@ const zed = {
     firstCard: null,
     secondCard: null,
     counter: 0,
-    mem1: [],
     mem2: [],
     gameWinner: null,
     gameOver: false,
@@ -85,6 +94,7 @@ const zed = {
         else if (this.secondCard.rank > this.firstCard.rank) this.winner(this.p2Deck)
         else {
             this.fillKitty()
+            //output the tie
             // console.log("There was a tie, players add one to the kitty")
         }
     },
@@ -95,14 +105,17 @@ const zed = {
         else if (this.p2Deck.length === 0) return "Player Two"
         else return null
     },
+    //push turn data to memory
     flipFight: function() {
 
         while (!this.gameOver) {
             this.counter++
-            // console.log(`counter: ${this.counter}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length}`)
-            // this.mem1.push(this.p1Deck)
-            // this.mem2.push(this.p2Deck)
+            //output Turn info
+            // console.log(`counter: ${this.counter}, Total Cards: ${this.p1Deck.length + this.p2Deck.length}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length},`)
+
+            //break at 10k iterations.  No one has time for that.
             if (this.counter > 10000) break
+            
             //pull Cards from the player decks
             this.firstCard = this.getCard(this.p1Deck)
             this.secondCard = this.getCard(this.p2Deck)
@@ -119,34 +132,47 @@ const zed = {
         }
     },
     averageCounter: 0,
+
     initialize: function() {
-        deck = []
-        p2Deck = []
-        kitty = []
-        firstCard = null
-        secondCard = null
-        counter = 0
-        mem1 = []
-        mem2 = []
-        gameWinner = null
-        gameOver = false
+        this.deck = []
+        this.p2Deck = []
+        this.kitty = []
+        this.firstCard = null
+        this.secondCard = null
+        this.counter = 0
+        this.gameWinner = null
+        this.gameOver = false
         this.buildDeck()
         this.shuffle()
         this.dealCards()
-
-
-    }
-    runGame: function(num=1) {
-        for(let i = 0; i < num; i++) {
+    },
+    savedGames: [],
+    logGame: function(gameNum) {
+        //game, count, p1Length, p2Length, kittyLength
+        let game = new Game(gameNum, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
+        console.log(JSON.stringify(game))
+        // this.savedGames.push(game)
+    },
+    runGame: function(numGames=1) {
+        for(let i = 0; i < numGames; i++) {
+            this.savedGames = [[]]
             this.initialize()
             this.flipFight()
-            console.log(`count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
-
+            this.averageCounter += this.counter
+            let game = new Game(i, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
+            console.log(JSON.stringify(game))
+            // console.log(`{game#: ${i+1}} count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
+            // this.logGame(i)
+        }
+        console.log(`Average # of turns to win over ${numGames} games: ${this.averageCounter/numGames}`)
+        console.log(`High Scores:`)
+        for (let item in this.savedGames) {
+            console.log(JSON.stringify(...this.savedGames))
         }
     }
 }
 
-zed.runGame()
+zed.runGame(5)
 //@@@@@@@@@@Run game@@@@@@@@@@@@@@@
 // zed.buildDeck()
 // // console.log(zed.deck)
