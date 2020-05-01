@@ -7,25 +7,28 @@ function Card(rank, face, frontUrl, backUrl) {
 }
 function Game(gameNum, count, p1Length, p2Length, kittyLength) {
         this.gameNum = gameNum;
-        this.count = count;
-        this.p1Length = p1Length;
-        this.p2Length = p2Length;
+        this.counter = count;
+        this.playerONE = p1Length;
+        this.playerTWO = p2Length;
         this.kittyLength = kittyLength;
 }
 
 
 //@@@@@@@@@@@@@@@@@@@@@@@ Game Object @@@@@@@@@@@@@@@@@@@@@@@@@@@
-const zed = { 
+const war = { 
     deck: [], //array of cards
-    p1Deck: [],
-    p2Deck: [],
-    kitty: [],
-    firstCard: null,
-    secondCard: null,
-    counter: 0,
-    mem2: [],
-    gameWinner: null,
-    gameOver: false,
+    p1Deck: [],  //first player's cards
+    p2Deck: [],  //second player's cards
+    kitty: [],  //side deck to fill with ties
+    firstCard: null,  //flipped first player's card
+    secondCard: null,  //flipped second player's card
+    counter: 0,  //counts number of turns (each tie breaker counts as one)
+    gameWinner: null,  //holds the winning player - player one or player two
+    gameOver: false,  //break switch for turns.  true = one player has zero cards
+    savedGames: [],  //holds the stats on each game run
+    gameNum: 0,  //the game currently running
+    numTies: 0,
+
     //fill 'deck' with cards specified by suits & numRanks
     buildDeck: function () {
         //specify the suits
@@ -44,15 +47,26 @@ const zed = {
         }        
     },
     //shuffle the array indices from received array
-    shuffle: function() {
+    // shuffle: function() {
+    //     let temp, random;
+    //     for (let i = this.deck.length; i!==0; i--) {
+    //         //pick an index at random
+    //         random = Math.floor(Math.random() * i);        
+    //         // And swap it with the current element.
+    //         temp = this.deck[i-1];
+    //         this.deck[i-1] = this.deck[random];
+    //         this.deck[random] = temp;
+    //     }
+    // },
+    shuffle: function(arrayToShuffle) {
         let temp, random;
-        for (let i = this.deck.length; i!==0; i--) {
+        for (let i = arrayToShuffle.length; i!==0; i--) {
             //pick an index at random
             random = Math.floor(Math.random() * i);        
             // And swap it with the current element.
-            temp = this.deck[i-1];
-            this.deck[i-1] = this.deck[random];
-            this.deck[random] = temp;
+            temp = arrayToShuffle[i-1];
+            arrayToShuffle[i-1] = arrayToShuffle[random];
+            arrayToShuffle[random] = temp;
         }
     },
     //split the deck between p1Deck and p2Deck, dealing from the end.
@@ -64,38 +78,46 @@ const zed = {
         
     },
     //returns a Card from the front of an array of Cards
-    getCard: function(playerDeck) {return playerDeck.shift()},
+    getCard: function(playerDeck) {return playerDeck.shift()
+    },
     //pushes all the card in play to thedeck received (p1Deck/p2Deck) 
-    winner: function(winner) {
+    winner: function(turnWinner) {
         // console.log("winner Started")
-        winner.push(this.firstCard, this.secondCard)
-            if (this.kitty !== []) {
-                for (let item in this.kitty)
-                    winner.push(this.kitty[item])
-            }
+        // winner.push(this.firstCard, this.secondCard)
+        //     if (this.kitty !== []) {
+        //         for (let item in this.kitty)
+        //             winner.push(this.kitty[item])
+        //     }
+        this.fillKitty()
+        this.shuffle(this.kitty)
+        for (let item in this.kitty) turnWinner.push(this.kitty[item])
         this.firstCard = null
         this.secondCard = null
         this.kitty = []
     },
-    //loads the kitty array with the first&second Card, and takes 1 card from each player deck.
-    fillKitty: function () {
+    //loads the kitty array with the first&second Card, if 'switch=true' takes 1 card from each player deck.
+    fillKitty: function (takeExtraCard=0) {
         // console.log("fillKitty Started")
         if (this.firstCard !== null) this.kitty.push(this.firstCard)
         if (this.secondCard !== null) this.kitty.push(this.secondCard)
-        if (this.p1Deck.length > 0) this.kitty.push(this.p1Deck.shift())
-        if (this.p2Deck.length > 0) this.kitty.push(this.p2Deck.shift())
+        if (takeExtraCard) {
+            if (this.p1Deck.length > 0) this.kitty.push(this.p1Deck.shift())
+            if (this.p2Deck.length > 0) this.kitty.push(this.p2Deck.shift())
+        }
         this.firstCard = null;
         this.secondCard = null;
     },
     //compare firstCard & secondCard and send to winner or to kitty if tie.
     compareCards: function() {
         // console.log("compareCards Started")
+        let turnWinner, takeExtraCard = false
         if (this.firstCard.rank > this.secondCard.rank) this.winner(this.p1Deck)
         else if (this.secondCard.rank > this.firstCard.rank) this.winner(this.p2Deck)
         else {
-            this.fillKitty()
-            //output the tie
-            // console.log("There was a tie, players add one to the kitty")
+            takeExtraCard = true
+            console.log("There was a tie, players add one to the kitty")
+            this.numTies++
+            this.fillKitty(takeExtraCard)
         }
     },
     //check for empty player decks
@@ -105,22 +127,25 @@ const zed = {
         else if (this.p2Deck.length === 0) return "Player Two"
         else return null
     },
-    //push turn data to memory
+    //The actual turn mechanic. Flips cards to compare until one player has zero cards remaining.
     flipFight: function() {
 
         while (!this.gameOver) {
             this.counter++
-            //output Turn info
-            // console.log(`counter: ${this.counter}, Total Cards: ${this.p1Deck.length + this.p2Deck.length}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length},`)
-
-            //break at 10k iterations.  No one has time for that.
-            if (this.counter > 10000) break
             
+            //break at 10k iterations.  No one has time for that.
+            if (this.counter > 5000) break
+
             //pull Cards from the player decks
             this.firstCard = this.getCard(this.p1Deck)
             this.secondCard = this.getCard(this.p2Deck)
-            //compare them and send to winner or kitty
+            
+            //output Turn info
+            this.printGameState()
+
+            //compare the cards and send to winner or kitty
             this.compareCards()
+
             //end while loop if a player deck is empty
             this.gameWinner = this.testForWin()
             if (this.gameWinner) {
@@ -131,71 +156,79 @@ const zed = {
             else this.gameOver = false
         }
     },
-    averageCounter: 0,
-
+    //clears all values in preparation for a game
     initialize: function() {
         this.deck = []
+        this.p1Deck = []
         this.p2Deck = []
         this.kitty = []
         this.firstCard = null
         this.secondCard = null
         this.counter = 0
+        this.numTies = 0
         this.gameWinner = null
         this.gameOver = false
         this.buildDeck()
-        this.shuffle()
+        this.shuffle(this.deck)
         this.dealCards()
     },
-    savedGames: [],
-    logGame: function(gameNum) {
-        //game, count, p1Length, p2Length, kittyLength
-        let game = new Game(gameNum, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
-        console.log(JSON.stringify(game))
-        // this.savedGames.push(game)
+    printGameState: function() {
+        console.log(`game: ${this.gameNum} counter: ${this.counter}, ${this.firstCard.rank} v ${this.secondCard.rank}, Total Cards: ${this.p1Deck.length + this.p2Deck.length}, p1: ${this.p1Deck.length}, p2: ${this.p2Deck.length}, kitty: ${this.kitty.length},`)
     },
+    //saves the game information to 'savedGames'
+    logGame: function() {
+        //game, count, p1Length, p2Length, kittyLength
+        let game = new Game(this.gameNum, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
+        this.savedGames.push(game)
+        console.log(JSON.stringify(game))
+    },
+    //function to start the game. Receives # of games & boolean. 
     runGame: function(numGames=1) {
-        for(let i = 0; i < numGames; i++) {
-            this.savedGames = [[]]
+        //ready game counter
+        this.savedGames = []
+        for(this.gameNum = 0; this.gameNum < numGames; this.gameNum++) {
             this.initialize()
             this.flipFight()
-            this.averageCounter += this.counter
-            let game = new Game(i, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
-            console.log(JSON.stringify(game))
             // console.log(`{game#: ${i+1}} count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
-            // this.logGame(i)
+            this.logGame()
         }
         console.log(`Average # of turns to win over ${numGames} games: ${this.averageCounter/numGames}`)
-        console.log(`High Scores:`)
-        for (let item in this.savedGames) {
-            console.log(JSON.stringify(...this.savedGames))
-        }
+        this.runStats();
+        console.log(`Game Results:`)
+        console.log(JSON.stringify(this.savedGames))
+        
+    },
+    runStats: function() {
+        let median, mean, totalNumTurns, numTies
     }
 }
 
-zed.runGame(5)
+war.runGame(3)
 //@@@@@@@@@@Run game@@@@@@@@@@@@@@@
-// zed.buildDeck()
-// // console.log(zed.deck)
-// zed.shuffle()
-// // console.log(zed.deck)
-// zed.dealCards()
-// // console.log(zed.p1Deck[0].rank)
-// zed.flipFight()
-// zed.p2Deck.length
-// zed.p1Deck.length
-// zed.kitty.length
-// zed.counter
-// // zed.getCard(zed.p1Deck)
-// // console.log(zed.firstCard)
+// war.buildDeck()
+// // console.log(war.deck)
+// war.shuffle()
+// // console.log(war.deck)
+// war.dealCards()
+// // console.log(war.p1Deck[0].rank)
+// war.flipFight()
+// war.p2Deck.length
+// war.p1Deck.length
+// war.kitty.length
+// war.counter
+// // war.getCard(war.p1Deck)
+// // console.log(war.firstCard)
 
 //@@@@@@@@@@TESTKITTY@@@@@@@@@
-// zed.fillKitty()
-// for (let x=0; x<40; x++) {zed.fillKitty()}
-// console.log(JSON.stringify(zed.kitty))
-// zed.winner(zed.p2Deck)
-// zed.p1Deck.length
-// zed.p2Deck.length
-// zed.p2Deck[zed.p2Deck.length-1]
+// war.fillKitty()
+// for (let x=0; x<40; x++) {war.fillKitty()}
+// console.log(JSON.stringify(war.kitty))
+// war.winner(war.p2Deck)
+// war.p1Deck.length
+// war.p2Deck.length
+// war.p2Deck[war.p2Deck.length-1]
 
 
-//LINE
+//Test the shuffle function
+// let anArray = [1,2,3,4,5]
+// war.shuffle(anArray)
