@@ -193,15 +193,14 @@ const war = {
         for(this.gameNum = 0; this.gameNum < numGames; this.gameNum++) {
             this.initialize()
             this.flipFight(showTurns)
-            // console.log(`{game#: ${i+1}} count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
             this.logGame()
         }
         console.log(`Average # of turns to win over ${numGames} games: ${this.averageCounter/numGames}`)
         this.runStats();
         console.log(`Game Results:`)
         console.log(JSON.stringify(this.savedGames))
-        
     },
+    //generates stats on the game set
     runStats: function() {
         let aveTies = Math.floor(this.numTurns/this.numTies)
         let mean = this.numTurns/this.gameNum
@@ -212,39 +211,10 @@ const war = {
         
     }
 }
+
+//@@@@@@@@@@@@@@@@@@@@@@ Console Output Instructions to Play @@@@@@@@@@@@@@@@@@@@@
 console.log("Welcome to the game of WAR!")
 console.log("To play, enter the command: war.runGame()")
 console.log("To see the turns, enter: war.runGame(true)")
 console.log("To run more than one game, enter: war.runGame(true/false,# of games)")
 console.log("For example: war.runGame(false,10)")
-
-
-// war.runGame(false,100)
-//@@@@@@@@@@Run game@@@@@@@@@@@@@@@
-// war.buildDeck()
-// // console.log(war.deck)
-// war.shuffle()
-// // console.log(war.deck)
-// war.dealCards()
-// // console.log(war.p1Deck[0].rank)
-// war.flipFight()
-// war.p2Deck.length
-// war.p1Deck.length
-// war.kitty.length
-// war.counter
-// // war.getCard(war.p1Deck)
-// // console.log(war.firstCard)
-
-//@@@@@@@@@@TESTKITTY@@@@@@@@@
-// war.fillKitty()
-// for (let x=0; x<40; x++) {war.fillKitty()}
-// console.log(JSON.stringify(war.kitty))
-// war.winner(war.p2Deck)
-// war.p1Deck.length
-// war.p2Deck.length
-// war.p2Deck[war.p2Deck.length-1]
-
-
-//Test the shuffle function
-// let anArray = [1,2,3,4,5]
-// war.shuffle(anArray)
