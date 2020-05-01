@@ -5,12 +5,14 @@ function Card(rank, face, frontUrl, backUrl) {
     this.frontUrl = frontUrl;
     this.backUrl = backUrl;
 }
-function Game(gameNum, count, p1Length, p2Length, kittyLength) {
+function Game(gameNum, count, p1Length, p2Length, kittyLength, numTies, winner) {
         this.gameNum = gameNum;
         this.counter = count;
         this.playerONE = p1Length;
         this.playerTWO = p2Length;
         this.kittyLength = kittyLength;
+        this.numTies = numTies;
+        this.winner = winner;
 }
 
 
@@ -28,6 +30,7 @@ const war = {
     savedGames: [],  //holds the stats on each game run
     gameNum: 0,  //the game currently running
     numTies: 0,
+    numTurns: 0,
 
     //fill 'deck' with cards specified by suits & numRanks
     buildDeck: function () {
@@ -108,14 +111,14 @@ const war = {
         this.secondCard = null;
     },
     //compare firstCard & secondCard and send to winner or to kitty if tie.
-    compareCards: function() {
+    compareCards: function(showTurns) {
         // console.log("compareCards Started")
         let turnWinner, takeExtraCard = false
         if (this.firstCard.rank > this.secondCard.rank) this.winner(this.p1Deck)
         else if (this.secondCard.rank > this.firstCard.rank) this.winner(this.p2Deck)
         else {
             takeExtraCard = true
-            console.log("There was a tie, players add one to the kitty")
+            if (showTurns) console.log("There was a tie, players add one to the kitty")
             this.numTies++
             this.fillKitty(takeExtraCard)
         }
@@ -128,7 +131,7 @@ const war = {
         else return null
     },
     //The actual turn mechanic. Flips cards to compare until one player has zero cards remaining.
-    flipFight: function() {
+    flipFight: function(showTurns) {
 
         while (!this.gameOver) {
             this.counter++
@@ -140,11 +143,11 @@ const war = {
             this.firstCard = this.getCard(this.p1Deck)
             this.secondCard = this.getCard(this.p2Deck)
             
-            //output Turn info
-            this.printGameState()
+            //output Turn info if 'showTurns'
+            if (showTurns) this.printGameState()
 
             //compare the cards and send to winner or kitty
-            this.compareCards()
+            this.compareCards(showTurns)
 
             //end while loop if a player deck is empty
             this.gameWinner = this.testForWin()
@@ -178,17 +181,18 @@ const war = {
     //saves the game information to 'savedGames'
     logGame: function() {
         //game, count, p1Length, p2Length, kittyLength
-        let game = new Game(this.gameNum, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length)
+        let game = new Game(this.gameNum, this.counter, this.p1Deck.length, this.p2Deck.length, this.kitty.length, this.numTies, this.gameWinner)
         this.savedGames.push(game)
+        this.numTurns += this.counter
         console.log(JSON.stringify(game))
     },
     //function to start the game. Receives # of games & boolean. 
-    runGame: function(numGames=1) {
+    runGame: function(showTurns=false, numGames=1) {
         //ready game counter
         this.savedGames = []
         for(this.gameNum = 0; this.gameNum < numGames; this.gameNum++) {
             this.initialize()
-            this.flipFight()
+            this.flipFight(showTurns)
             // console.log(`{game#: ${i+1}} count: ${this.counter} | P2: ${this.p2Deck.length} | p1: ${this.p1Deck.length}`)
             this.logGame()
         }
@@ -199,11 +203,23 @@ const war = {
         
     },
     runStats: function() {
-        let median, mean, totalNumTurns, numTies
+        let aveTies = Math.floor(this.numTurns/this.numTies)
+        let mean = this.numTurns/this.gameNum
+
+        console.log("GAME SET METRICS")
+        console.log(`GAMES: ${this.gameNum} | TOTAL TURNS ${this.numTurns} | AVE TURNS/GAME ${mean},`)
+        console.log(`TOTAL TIES: ${this.numTies} | AVE TURN PER TIE ${aveTies}`) 
+        
     }
 }
+console.log("Welcome to the game of WAR!")
+console.log("To play, enter the command: war.runGame()")
+console.log("To see the turns, enter: war.runGame(true)")
+console.log("To run more than one game, enter: war.runGame(true/false,# of games)")
+console.log("For example: war.runGame(false,10)")
 
-war.runGame(3)
+
+// war.runGame(false,100)
 //@@@@@@@@@@Run game@@@@@@@@@@@@@@@
 // war.buildDeck()
 // // console.log(war.deck)
