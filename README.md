@@ -4,7 +4,7 @@ Game of War the Card Game
 
 ## Getting Started
 
-Go to https://secondaryfun.github.io/game-of-war/ to try the game.  The game is automated. Specify how many games to run in your browser's console.
+Go to {link}(https://secondaryfun.github.io/game-of-war/) to try the game.  The game is automated. Specify how many games to run in your browser's console.
 
 ### Rules
 
