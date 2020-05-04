@@ -176,14 +176,7 @@ const war = {
         for (let each in this.savedGames) {
             console.log(`@@@ GAME: ${this.savedGames[each].gameNum} | # TURNS: ${this.savedGames[each].count} | CARDS: P1 / P2 - Kitty: ${this.savedGames[each].p1Length} / ${this.savedGames[each].p2Length} - ${this.savedGames[each].kittyLength} | # WARS ${this.savedGames[each].numTies} | WINNER ${this.savedGames[each].winner} @@@`)
         }
-    },
-    //Output log to the site
-    printWeb: function() {
-        let content = ""
-        for (let each in this.savedGames) {
-            content += (`<h4>GAME: ${this.savedGames[each].gameNum} - ${this.savedGames[each].winner.toUpperCase()}</h4><p>@@@ # TURNS: ${this.savedGames[each].count} @@@</p>`)
-        }
-        document.getElementById('highScores').innerHTML = content
+
     },
     //-----------------------================ GAME PLAY ===============--------------------------
 
@@ -226,7 +219,6 @@ const war = {
             this.logGame()
         }
         this.runStats();
-        this.printWeb();
     }
 }
 
