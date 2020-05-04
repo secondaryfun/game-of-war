@@ -1,6 +1,4 @@
-# Project Title
-
-Game of War the Card Game
+# Game of War the Card Game
 
 ## Getting Started
 
