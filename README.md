@@ -8,7 +8,7 @@ Go to [link](https://secondaryfun.github.io/game-of-war/) to try the game.  The 
 
 ### Rules
 
-The rules for the game can be found [here:] (https://bicyclecards.com/how-to-play/war/)
+The rules for the game can be found [here.](https://bicyclecards.com/how-to-play/war/)
 
 Objective:  The winning player takes all the cards.
 
